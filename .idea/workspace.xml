@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="88f560eb-b227-48ed-9105-95c291d73bad" name="Changes" comment="" />
+    <list default="true" id="88f560eb-b227-48ed-9105-95c291d73bad" name="Changes" comment="Fix: handle NoResourceFoundException as 404 instead of falling through to generic 500" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,6 +16,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "aaravw8804"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/aaravw8804/PolicyProvision.git",
+    "accountId": "26d29d52-9de7-420a-9bc4-c1cd6dc0ab66"
+  }
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -94,6 +106,7 @@
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.PolicyProvisionApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
@@ -120,9 +133,22 @@
       <option name="presentableId" value="Default" />
       <updated>1784088316244</updated>
     </task>
+    <task id="LOCAL-00001" summary="Fix: handle NoResourceFoundException as 404 instead of falling through to generic 500">
+      <option name="closed" value="true" />
+      <created>1784091150012</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1784091150013</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Fix: handle NoResourceFoundException as 404 instead of falling through to generic 500" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix: handle NoResourceFoundException as 404 instead of falling through to generic 500" />
   </component>
 </project>
