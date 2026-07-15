@@ -19,13 +19,6 @@ used anywhere in this application** — all state is lost on restart, by design.
 | Storage | In-memory (`ConcurrentHashMap`) — no database |
 | Testing | JUnit 5 |
 
-> **Note on framework version:** the assignment brief specifies Spring Boot 3.x. Spring Boot 3.5
-> (the final 3.x line) reached open-source end-of-life on June 30, 2026 and has since been
-> removed from Spring Initializr. Spring Boot 4.1.0 was used instead as the closest actively
-> supported successor — see `DESIGN_DECISIONS.md` for details. The REST/validation/Jackson APIs
-> used here are identical between 3.x and 4.x (the `jakarta.*` namespace migration happened back
-> in Spring Boot 3.0).
-
 ---
 
 ## Project Setup
@@ -247,7 +240,7 @@ All errors return a consistent shape:
 
 ---
 
-## End-to-End Flow (matches the assignment's expected flow)
+## End-to-End Flow 
 
 1. `GET /reference-master/POLICY_TERM` and `GET /reference-master/PAYMENT_FREQUENCY` — check valid values
 2. `POST /customers` — create a customer, then `GET /customers/{id}` to verify
@@ -266,4 +259,4 @@ All errors return a consistent shape:
 - Pagination on `GET /customers` and `GET /audits` (`?page=&size=`)
 - Request logging filter (method, URI, status, duration logged for every request)
 
-See `DESIGN_DECISIONS.md` for the reasoning behind each.
+Refer `DESIGN_DECISIONS.md` for the reasoning behind each.
