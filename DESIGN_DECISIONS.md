@@ -120,23 +120,6 @@ this is an in-memory evaluation exercise with no real security boundary, not a p
 
 ---
 
-## Framework Version: Spring Boot 4.1.0 instead of 3.x
-
-The assignment brief specifies Spring Boot 3.x. At the time of building this project, Spring
-Boot 3.5 (the final 3.x line) had just reached open-source end-of-life (June 30, 2026) and had
-already been removed from Spring Initializr — it was not selectable via start.spring.io or
-IntelliJ's project generator. Spring Boot 4.1.0 was used as the closest actively supported
-successor.
-
-This has minimal practical impact on the submitted code: the `jakarta.*` namespace migration
-(the biggest breaking change historically associated with a Spring Boot major version) already
-happened in Spring Boot 3.0, so all validation annotations, servlet APIs, and REST annotations
-used here are identical to what 3.x code would look like. The main visible difference is the
-modularized starter name (`spring-boot-starter-webmvc` instead of the older
-`spring-boot-starter-web`).
-
----
-
 ## Assumptions Made
 
 - **Nominee comparison** is done by comparing `nomineeName` (trimmed, case-insensitive) against
