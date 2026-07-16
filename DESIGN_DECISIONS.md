@@ -91,10 +91,9 @@ field-level error map so API consumers know exactly which field(s) failed and wh
 
 ## ID Generation
 
-Sequential, human-readable IDs (`CUST-0001`, `PROP-0001`, `POL-0001`, `AUD-0001`) rather than
-UUIDs. Trade-off: sequential IDs are easier to read/debug/demo during evaluation and match the
-tone of the assignment brief, at the cost of being predictable/guessable — acceptable here since
-this is an in-memory evaluation exercise with no real security boundary, not a production system.
+Sequential, readable IDs (`CUST-0001`, `PROP-0001`, `POL-0001`, `AUD-0001`) rather than
+UUIDs. Trade-off: sequential IDs are easier to read/debug/demo during testing and at the cost of being predictable/guessable — acceptable here since
+this is an in-memory system with no real security boundary. It is not a production-ready system.
 
 ---
 
@@ -107,16 +106,37 @@ this is an in-memory evaluation exercise with no real security boundary, not a p
   wrong default for an insurance system, even a simulated one.
 - **Masked PAN**: only the PAN is masked (first 2 / last 2 characters visible, middle
   characters replaced with `*`), not the customer's name — this was a scoping decision to keep
-  the bonus simple, since PAN is the field most directly tied to real, sensitive PII, while the
+  , since PAN is the field most directly tied to real, sensitive PII, while the
   name is needed as-is for the nominee-comparison business rule to be legible in responses.
-- **Audit lookup by entity ID**: `GET /audits/entity/{proposalId}` — the assignment's audit
-  requirement is at the proposal level, so "entity" here means proposal ID specifically, rather
+- **Audit lookup by entity ID**: `GET /audits/entity/{proposalId}` — since the audit
+  requirement is at the proposal level, "entity" here means proposal ID specifically, rather
   than a generic polymorphic entity-type lookup.
-- **Pagination**: added to `GET /customers` and `GET /audits`, the two endpoints most likely to
-  grow large during a demo/evaluation session. `GET /proposals` has no list endpoint at all in
-  the spec (only `GET /proposals/{id}`), so pagination wasn't relevant there.
+- **Pagination**: added to `GET /customers`, `GET /proposals`, and `GET /audits` — every list
+  endpoint in the application, all following the same `PagedResponse<T>` shape and
+  `?page=&size=` query parameters for consistency.
 - **Request logging**: a single `OncePerRequestFilter` logging method, URI, response status, and
   duration for every request — lightweight, no external logging dependency needed.
+
+---
+
+## Frontend (added beyond the assignment spec)
+
+A minimal static frontend (`src/main/resources/static/index.html`) was added after the backend
+was complete, purely to make manual testing and demoing faster — the requirements themselves only
+ask for a REST API, with Postman/cURL as the expected testing method.
+
+Key decisions:
+
+- **Plain HTML/CSS/JS, no build step, no framework.** Kept as a single static file so it needs
+  nothing beyond what Spring Boot already serves — no npm, no bundler, no separate frontend
+  project to maintain alongside the backend.
+- **Served from `src/main/resources/static/`, same origin as the API.** Spring Boot serves this
+  directory automatically at `/`. Because the frontend and the API share an origin
+  (`localhost:8080`), all `fetch()` calls use relative paths and need no CORS configuration at
+  all — avoiding a whole category of complexity that a separately-hosted frontend would require.
+- **No new backend logic.** The frontend is a pure consumer of the existing REST API; it doesn't
+  bypass any validation or duplicate business rules in JavaScript. Every error message shown to
+  the user is the actual `message` field from the API's `ErrorResponse`, not a client-side guess.
 
 ---
 
@@ -136,6 +156,12 @@ this is an in-memory evaluation exercise with no real security boundary, not a p
   without touching validation logic.
 - **`GET /customers` and `GET /audits`** default to `page=0&size=10` when no query parameters
   are supplied.
+- **`GET /proposals` list endpoint**: the given specs only requires `GET /proposals/{id}`,
+  with no list endpoint for all proposals to be visible. This was added after it became clear a
+  usable UI (or any manual testing beyond one proposal at a time) needs a way to see all
+  proposals, not just fetch them one ID at a time. It mirrors the existing `GET /customers` and
+  `GET /audits` pattern exactly — same `PagedResponse<T>` wrapper, same query parameters — so
+  it doesn't introduce a new convention. 
 
 ---
 
