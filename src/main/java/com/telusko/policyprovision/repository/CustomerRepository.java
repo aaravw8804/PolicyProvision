@@ -28,9 +28,9 @@ public class CustomerRepository {
         return Optional.ofNullable(store.get(id));
     }
 
-    public boolean existsById(String id) {
+    /* public boolean existsById(String id) {
         return store.containsKey(id);
-    }
+    }*/
 
     public List<Customer> findAll() {
 
