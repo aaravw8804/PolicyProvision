@@ -36,6 +36,7 @@ public class CustomerService {
 
     public Customer createCustomer(CustomerRequest request) {
         validateAge(request.dateOfBirth());
+        validatePanUniqueness(request.pan(), null);
 
         Customer customer = Customer.builder()
                 .id(idGenerator.next(ID_PREFIX))
@@ -63,6 +64,7 @@ public class CustomerService {
     public Customer updateCustomer(String id, CustomerRequest request) {
         Customer existing = getCustomer(id);
         validateAge(request.dateOfBirth());
+        validatePanUniqueness(request.pan(), id);
 
         existing.setFullName(request.fullName().trim());
         existing.setDateOfBirth(request.dateOfBirth());
@@ -91,5 +93,17 @@ public class CustomerService {
                     "Customer age must be between %d and %d years (calculated age: %d)"
                             .formatted(MIN_AGE, MAX_AGE, age));
         }
+    }
+
+    private void validatePanUniqueness(String pan, String excludeCustomerId) {
+        if (pan == null || pan.isBlank()) {
+            return; // PAN is optional; nothing to check
+        }
+        customerRepository.findByPan(pan).ifPresent(existing -> {
+            if (!existing.getId().equals(excludeCustomerId)) {
+                throw new BusinessValidationException(
+                        "PAN " + pan + " is already registered to customer " + existing.getId());
+            }
+        });
     }
 }

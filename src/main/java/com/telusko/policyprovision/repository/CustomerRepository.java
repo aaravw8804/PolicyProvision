@@ -32,6 +32,12 @@ public class CustomerRepository {
         return store.containsKey(id);
     }*/
 
+    public Optional<Customer> findByPan(String pan) {
+        return store.values().stream()
+                .filter(c -> pan.equalsIgnoreCase(c.getPan()))
+                .findFirst();
+    }
+
     public List<Customer> findAll() {
 
         return store.values().stream()
