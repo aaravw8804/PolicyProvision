@@ -161,7 +161,9 @@ Key decisions:
   usable UI (or any manual testing beyond one proposal at a time) needs a way to see all
   proposals, not just fetch them one ID at a time. It mirrors the existing `GET /customers` and
   `GET /audits` pattern exactly — same `PagedResponse<T>` wrapper, same query parameters — so
-  it doesn't introduce a new convention. 
+  it doesn't introduce a new convention.
+- **PAN uniqueness** was added as an additional feature since each individual has a unique PAN and
+  no two customers should be allowed to use the same PAN.
 
 ---
 
