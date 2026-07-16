@@ -3,6 +3,7 @@ package com.telusko.policyprovision.repository;
 import com.telusko.policyprovision.model.Customer;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +33,10 @@ public class CustomerRepository {
     }
 
     public List<Customer> findAll() {
-        return List.copyOf(store.values());
+
+        return store.values().stream()
+                .sorted(Comparator.comparing(Customer::getId))
+                .toList();
     }
 
     public void deleteById(String id) {

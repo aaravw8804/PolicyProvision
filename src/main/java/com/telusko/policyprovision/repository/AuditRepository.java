@@ -3,6 +3,7 @@ package com.telusko.policyprovision.repository;
 import com.telusko.policyprovision.model.AuditRecord;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +23,9 @@ public class AuditRepository {
     }
 
     public List<AuditRecord> findAll() {
-        return List.copyOf(store.values());
+        return store.values().stream()
+                .sorted(Comparator.comparing(AuditRecord::getId))
+                .toList();
     }
 
     public List<AuditRecord> findByProposalId(String proposalId) {

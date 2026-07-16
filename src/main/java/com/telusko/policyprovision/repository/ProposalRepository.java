@@ -3,6 +3,7 @@ package com.telusko.policyprovision.repository;
 import com.telusko.policyprovision.model.Proposal;
 import org.springframework.stereotype.Repository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +27,10 @@ public class ProposalRepository {
     }
 
     public List<Proposal> findAll() {
-        return List.copyOf(store.values());
+
+        return store.values().stream()
+                .sorted(Comparator.comparing(Proposal::getId))
+                .toList();
     }
 
     public List<Proposal> findByCustomerId(String customerId) {
