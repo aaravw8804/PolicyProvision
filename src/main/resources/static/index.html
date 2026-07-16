@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Proposal Processing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --ink:#12151c;
+            --panel:#1a1f29;
+            --panel-2:#1f2530;
+            --border:#2b3240;
+            --border-soft:#242b37;
+            --text:#eae7e0;
+            --text-muted:#8b93a3;
+            --text-faint:#5c6472;
+            --accent:#b0472f;
+            --accent-hover:#c25236;
+            --accent-soft:rgba(176,71,47,0.16);
+            --success:#4f9d6e;
+            --success-soft:rgba(79,157,110,0.15);
+            --warning:#c9a227;
+            --warning-soft:rgba(201,162,39,0.15);
+            --radius:10px;
+            --radius-sm:6px;
+            --font-display:'Source Serif 4', Georgia, 'Iowan Old Style', serif;
+            --font-body:'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono:'JetBrains Mono', 'SF Mono', Consolas, monospace;
+            --shadow:0 8px 30px rgba(0,0,0,0.35);
+        }
+
+        *{box-sizing:border-box;}
+        html,body{height:100%;}
+        body{
+            margin:0;
+            background:var(--ink);
+            color:var(--text);
+            font-family:var(--font-body),serif;
+            font-size:14px;
+            -webkit-font-smoothing:antialiased;
+        }
+        @media (prefers-reduced-motion: reduce){
+            *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+        }
+
+        a{color:inherit;}
+        button{font-family:inherit;}
+
+        .app{display:flex; min-height:100vh;}
+
+        .sidebar{
+            width:220px;
+            flex-shrink:0;
+            background:var(--panel);
+            border-right:1px solid var(--border-soft);
+            display:flex;
+            flex-direction:column;
+            padding:22px 14px;
+        }
+        .brand{
+            font-family:var(--font-display),serif;
+            font-size:19px;
+            font-weight:600;
+            letter-spacing:0.01em;
+            padding:0 10px 6px;
+            display:flex;
+            align-items:baseline;
+            gap:8px;
+        }
+        .brand .mark{
+            width:9px; height:9px; border-radius:50%;
+            background:var(--accent);
+            display:inline-block;
+            transform:translateY(-1px);
+        }
+        .brand-sub{
+            font-size:11px;
+            color:var(--text-faint);
+            padding:0 10px 26px;
+            font-family:var(--font-mono),serif;
+            letter-spacing:0.03em;
+            text-transform:uppercase;
+        }
+
+        .nav{display:flex; flex-direction:column; gap:2px;}
+        .nav-item{
+            display:flex; align-items:center; gap:10px;
+            padding:9px 10px;
+            border-radius:var(--radius-sm);
+            color:var(--text-muted);
+            text-decoration:none;
+            font-size:13.5px;
+            font-weight:500;
+            cursor:pointer;
+            border:none;
+            background:none;
+            text-align:left;
+            width:100%;
+        }
+        .nav-item:hover{background:var(--panel-2); color:var(--text);}
+        .nav-item.active{background:var(--accent-soft); color:var(--text);}
+        .nav-item.active .nav-dot{background:var(--accent);}
+        .nav-dot{width:5px; height:5px; border-radius:50%; background:var(--text-faint); flex-shrink:0;}
+
+        .sidebar-footer{
+            margin-top:auto;
+            padding:10px;
+            font-size:11px;
+            color:var(--text-faint);
+            font-family:var(--font-mono),serif;
+            border-top:1px solid var(--border-soft);
+            padding-top:14px;
+        }
+        .status-dot{width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;margin-right:6px;}
+
+        .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+
+        .topbar{
+            display:flex; align-items:center; justify-content:space-between;
+            padding:22px 32px;
+            border-bottom:1px solid var(--border-soft);
+            flex-wrap:wrap;
+            gap:12px;
+        }
+        .topbar h1{
+            font-family:var(--font-display),serif;
+            font-weight:600;
+            font-size:22px;
+            margin:0;
+        }
+        .topbar .sub{
+            color:var(--text-muted);
+            font-size:13px;
+            margin-top:2px;
+        }
+
+        .content{padding:24px 32px 60px; flex:1;}
+
+        .btn{
+            display:inline-flex; align-items:center; gap:7px;
+            padding:9px 16px;
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border);
+            background:var(--panel-2);
+            color:var(--text);
+            font-size:13px;
+            font-weight:500;
+            cursor:pointer;
+            transition:background 0.12s ease, border-color 0.12s ease;
+        }
+        .btn:hover{background:#252c38; border-color:#3a4152;}
+        .btn-primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+        .btn-primary:hover{background:var(--accent-hover); border-color:var(--accent-hover);}
+        .btn-danger{color:#e08a7a;}
+        .btn-danger:hover{background:rgba(176,71,47,0.12); border-color:var(--accent);}
+        .btn-ghost{background:none; border-color:transparent;}
+        .btn-ghost:hover{background:var(--panel-2);}
+        .btn-sm{padding:6px 11px; font-size:12px;}
+        .btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+        .panel{
+            background:var(--panel);
+            border:1px solid var(--border-soft);
+            border-radius:var(--radius);
+            overflow:hidden;
+        }
+        table{width:100%; border-collapse:collapse;}
+        thead th{
+            text-align:left;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:0.05em;
+            color:var(--text-faint);
+            font-weight:600;
+            padding:12px 16px;
+            border-bottom:1px solid var(--border-soft);
+            background:var(--panel-2);
+        }
+        tbody td{
+            padding:13px 16px;
+            border-bottom:1px solid var(--border-soft);
+            font-size:13px;
+            vertical-align:middle;
+        }
+        tbody tr:last-child td{border-bottom:none;}
+        tbody tr{cursor:pointer; transition:background 0.1s ease;}
+        tbody tr:hover{background:var(--panel-2);}
+        .mono{font-family:var(--font-mono); font-size:12.5px; color:var(--text-muted);}
+        .id-cell{font-family:var(--font-mono); font-size:12.5px; color:var(--accent); font-weight:500;}
+        .row-actions{display:flex; gap:6px; justify-content:flex-end;}
+        .row-actions .btn{opacity:0;}
+        tbody tr:hover .row-actions .btn{opacity:1;}
+
+        .empty-state{
+            padding:70px 20px;
+            text-align:center;
+            color:var(--text-muted);
+        }
+        .empty-state .glyph{font-size:26px; margin-bottom:10px; color:var(--text-faint);}
+        .empty-state h3{font-family:var(--font-display); font-weight:600; font-size:17px; margin:0 0 6px; color:var(--text);}
+        .empty-state p{font-size:13px; margin:0 0 18px;}
+
+        .badge{
+            display:inline-flex; align-items:center; gap:5px;
+            padding:3px 9px;
+            border-radius:100px;
+            font-size:11px;
+            font-weight:600;
+            letter-spacing:0.02em;
+            text-transform:uppercase;
+            font-family:var(--font-mono);
+        }
+        .badge-draft{background:var(--warning-soft); color:var(--warning);}
+        .badge-submitted{background:var(--success-soft); color:var(--success);}
+        .badge::before{content:''; width:5px; height:5px; border-radius:50%; background:currentColor;}
+
+        .seal{
+            display:inline-flex; align-items:center; justify-content:center;
+            width:18px; height:18px;
+            border-radius:50%;
+            background:var(--accent-soft);
+            border:1px solid var(--accent);
+            color:var(--accent);
+            font-size:9px;
+            margin-right:6px;
+            flex-shrink:0;
+        }
+
+        .pager{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-top:1px solid var(--border-soft); background:var(--panel-2);}
+        .pager .info{font-size:12px; color:var(--text-muted); font-family:var(--font-mono);}
+        .pager .controls{display:flex; gap:6px;}
+
+        .overlay{
+            position:fixed; inset:0; background:rgba(8,10,14,0.6);
+            opacity:0; pointer-events:none; transition:opacity 0.2s ease;
+            z-index:40;
+        }
+        .overlay.open{opacity:1; pointer-events:auto;}
+        .drawer{
+            position:fixed; top:0; right:0; height:100%;
+            width:440px; max-width:92vw;
+            background:var(--panel);
+            border-left:1px solid var(--border);
+            box-shadow:var(--shadow);
+            transform:translateX(100%);
+            transition:transform 0.25s cubic-bezier(.3,.8,.4,1);
+            z-index:41;
+            display:flex; flex-direction:column;
+        }
+        .drawer.open{transform:translateX(0);}
+        .drawer-head{
+            padding:22px 26px;
+            border-bottom:1px solid var(--border-soft);
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .drawer-head h2{font-family:var(--font-display); font-size:19px; font-weight:600; margin:0;}
+        .drawer-body{padding:22px 26px; overflow-y:auto; flex:1;}
+        .drawer-foot{padding:18px 26px; border-top:1px solid var(--border-soft); display:flex; gap:10px; justify-content:flex-end;}
+
+        .field{margin-bottom:16px;}
+        .field label{display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px;}
+        .field .hint{font-size:11px; color:var(--text-faint); margin-top:5px;}
+        .field input, .field select{
+            width:100%;
+            background:var(--ink);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            padding:9px 11px;
+            color:var(--text);
+            font-size:13px;
+            font-family:var(--font-body);
+        }
+        .field input:focus, .field select:focus{outline:2px solid var(--accent); outline-offset:0; border-color:var(--accent);}
+        .field .err{color:#e08a7a; font-size:11.5px; margin-top:5px; display:none;}
+        .field.has-err input, .field.has-err select{border-color:var(--accent);}
+        .field.has-err .err{display:block;}
+
+        .kv{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:13px;}
+        .kv:last-child{border-bottom:none;}
+        .kv .k{color:var(--text-muted);}
+        .kv .v{font-family:var(--font-mono); text-align:right;}
+
+        .toast-wrap{position:fixed; bottom:22px; right:22px; z-index:60; display:flex; flex-direction:column; gap:8px; align-items:flex-end;}
+        .toast{
+            background:var(--panel-2);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            padding:12px 16px;
+            font-size:13px;
+            max-width:340px;
+            box-shadow:var(--shadow);
+            display:flex; gap:10px; align-items:flex-start;
+            animation:toastIn 0.2s ease;
+        }
+        @keyframes toastIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+        .toast.error{border-color:var(--accent);}
+        .toast.success{border-color:var(--success);}
+        .toast .dot{width:7px; height:7px; border-radius:50%; margin-top:4px; flex-shrink:0;}
+        .toast.error .dot{background:var(--accent);}
+        .toast.success .dot{background:var(--success);}
+
+        .ref-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+        .ref-card{background:var(--panel); border:1px solid var(--border-soft); border-radius:var(--radius); padding:20px;}
+        .ref-card h3{font-family:var(--font-display); font-size:15px; margin:0 0 4px; font-weight:600;}
+        .ref-card .cat{font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:14px;}
+        .chip-list{display:flex; flex-wrap:wrap; gap:8px;}
+        .chip{
+            font-family:var(--font-mono); font-size:12.5px;
+            background:var(--panel-2); border:1px solid var(--border);
+            padding:5px 11px; border-radius:100px; color:var(--text);
+        }
+
+        .loading{padding:60px; text-align:center; color:var(--text-faint); font-size:13px;}
+
+        @media (max-width:760px){
+            .topbar{padding:16px 18px;}
+            .content{padding:16px 18px 60px;}
+            .ref-grid{grid-template-columns:1fr;}
+            thead{display:none;}
+            table, tbody, tr, td{display:block; width:100%;}
+            tbody tr{border-bottom:1px solid var(--border-soft); padding:10px 4px;}
+            tbody td{border-bottom:none; padding:4px 12px;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <aside class="sidebar" id="sidebar">
+        <div class="brand"><span class="mark"></span>Policy Provision</div>
+        <div class="brand-sub">In-memory ledger</div>
+        <nav class="nav" id="nav">
+            <button class="nav-item" data-view="customers"><span class="nav-dot"></span>Customers</button>
+            <button class="nav-item" data-view="proposals"><span class="nav-dot"></span>Proposals</button>
+            <button class="nav-item" data-view="audits"><span class="nav-dot"></span>Audit Trail</button>
+            <button class="nav-item" data-view="reference"><span class="nav-dot"></span>Reference Data</button>
+        </nav>
+        <div class="sidebar-footer"><span class="status-dot"></span>localhost:8080</div>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div>
+                <h1 id="viewTitle">Customers</h1>
+                <div class="sub" id="viewSub">Everyone with an active or past proposal</div>
+            </div>
+            <div id="topbarActions"></div>
+        </div>
+        <div class="content" id="content">
+            <div class="loading">Loading…</div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+    <div class="drawer-head">
+        <h2 id="drawerTitle">New Customer</h2>
+        <button class="btn btn-ghost btn-sm" id="drawerClose">Close</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-foot" id="drawerFoot"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+    const API = '';
+
+    function esc(s){ return (s===null||s===undefined) ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function fmtDateTime(iso){ if(!iso) return '—'; const d = new Date(iso); return d.toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
+    function fmtMoney(v){ if(v===null||v===undefined) return '—'; return '₹' + Number(v).toLocaleString('en-IN'); }
+
+    function toast(message, type){
+        const wrap = document.getElementById('toastWrap');
+        const el = document.createElement('div');
+        el.className = 'toast ' + (type||'success');
+        el.innerHTML = `<span class="dot"></span><span>${esc(message)}</span>`;
+        wrap.appendChild(el);
+        setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 4200);
+    }
+
+    async function api(method, path, body){
+        let res;
+        try{
+            res = await fetch(API + path, {
+                method,
+                headers: body ? {'Content-Type':'application/json'} : undefined,
+                body: body ? JSON.stringify(body) : undefined
+            });
+        }catch(e){
+            toast('Cannot reach the server. Is the app running on :8080?', 'error');
+            throw e;
+        }
+        if(res.status === 204) return null;
+        let data = null;
+        try{ data = await res.json(); }catch(e){}
+        if(!res.ok){
+            const msg = (data && (data.message || data.error)) || `Request failed (${res.status})`;
+            if(data && data.fieldErrors){
+                const details = Object.entries(data.fieldErrors).map(([f,m])=>`${f}: ${m}`).join(' · ');
+                toast(details || msg, 'error');
+            } else {
+                toast(msg, 'error');
+            }
+            const err = new Error(msg); err.payload = data; err.status = res.status;
+            throw err;
+        }
+        return data;
+    }
+
+    const state = {
+        view: 'customers',
+        page: { customers:0, proposals:0, audits:0 },
+        size: 8,
+        customersCache: []
+    };
+
+    document.getElementById('nav').addEventListener('click', e=>{
+        const btn = e.target.closest('.nav-item');
+        if(!btn) return;
+        navigate(btn.dataset.view);
+    });
+    function navigate(view){
+        state.view = view;
+        document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+        render();
+    }
+
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+    function openDrawer(title){
+        document.getElementById('drawerTitle').textContent = title;
+        overlay.classList.add('open');
+        drawer.classList.add('open');
+    }
+    function closeDrawer(){
+        overlay.classList.remove('open');
+        drawer.classList.remove('open');
+    }
+    overlay.addEventListener('click', closeDrawer);
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+
+    function field(id, label, opts){
+        opts = opts || {};
+        const type = opts.type || 'text';
+        const val = esc(opts.value || '');
+        return `
+    <div class="field" id="field-${id}">
+      <label for="${id}">${label}</label>
+      <input type="${type}" id="${id}" value="${val}" placeholder="${esc(opts.placeholder||'')}">
+      ${opts.hint ? `<div class="hint">${opts.hint}</div>` : ''}
+      <div class="err"></div>
+    </div>`;
+    }
+    function selectField(id, label, options){
+        const opts = options.map(o=>`<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+        return `
+    <div class="field" id="field-${id}">
+      <label for="${id}">${label}</label>
+      <select id="${id}">${opts}</select>
+      <div class="err"></div>
+    </div>`;
+    }
+    function showFieldErrors(errors){
+        document.querySelectorAll('.field').forEach(f=>f.classList.remove('has-err'));
+        if(!errors) return;
+        Object.entries(errors).forEach(([f,msg])=>{
+            const el = document.getElementById('field-'+f);
+            if(el){ el.classList.add('has-err'); el.querySelector('.err').textContent = msg; }
+        });
+    }
+
+    async function render(){
+        const titles = {
+            customers:['Customers','Everyone with an active or past proposal'],
+            proposals:['Proposals','Drafted and submitted policy proposals'],
+            audits:['Audit Trail','Every proposal submission, recorded automatically'],
+            reference:['Reference Data','Valid values used to validate proposals']
+        };
+        document.getElementById('viewTitle').textContent = titles[state.view][0];
+        document.getElementById('viewSub').textContent = titles[state.view][1];
+        document.getElementById('content').innerHTML = '<div class="loading">Loading…</div>';
+        document.getElementById('topbarActions').innerHTML = '';
+
+        if(state.view==='customers') await renderCustomers();
+        else if(state.view==='proposals') await renderProposals();
+        else if(state.view==='audits') await renderAudits();
+        else if(state.view==='reference') await renderReference();
+    }
+
+    async function renderCustomers(){
+        document.getElementById('topbarActions').innerHTML =
+            `<button class="btn btn-primary" id="newCustomerBtn">+ New Customer</button>`;
+        document.getElementById('newCustomerBtn').addEventListener('click', ()=>openCustomerForm());
+
+        let data;
+        try{ data = await api('GET', `/customers?page=${state.page.customers}&size=${state.size}`); }
+        catch(e){ document.getElementById('content').innerHTML = errorPanel(); return; }
+
+        state.customersCache = data.content;
+        const content = document.getElementById('content');
+
+        if(data.content.length===0 && state.page.customers===0){
+            content.innerHTML = emptyState('◇','No customers yet','Add your first customer to begin drafting proposals.','newCustomerBtn2','+ New Customer');
+            document.getElementById('newCustomerBtn2').addEventListener('click', ()=>openCustomerForm());
+            return;
+        }
+
+        content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Email</th><th>PAN</th><th></th></tr></thead>
+        <tbody>
+          ${data.content.map(c=>`
+            <tr data-id="${esc(c.id)}">
+              <td class="id-cell">${esc(c.id)}</td>
+              <td>${esc(c.fullName)}</td>
+              <td class="mono">${c.age}</td>
+              <td class="mono">${esc(c.email)}</td>
+              <td class="mono">${c.pan ? esc(c.pan) : '—'}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn btn-sm" data-edit="${esc(c.id)}">Edit</button>
+                  <button class="btn btn-sm btn-danger" data-del="${esc(c.id)}">Delete</button>
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      ${pager(data, 'customers')}
+    </div>`;
+
+        content.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation(); openCustomerForm(b.dataset.edit);}));
+        content.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation(); deleteCustomer(b.dataset.del);}));
+        content.querySelectorAll('tbody tr').forEach(tr=>tr.addEventListener('click', ()=>openCustomerForm(tr.dataset.id)));
+        wirePager('customers');
+    }
+
+    async function openCustomerForm(id){
+        let c = null;
+        if(id) { try{ c = await api('GET', `/customers/${id}`); } catch(e){ return; } }
+
+        const body = document.getElementById('drawerBody');
+        body.innerHTML = `
+    ${field('c-fullName','Full name',{value:c?.fullName, placeholder:'Aarav Sharma'})}
+    ${field('c-dob','Date of birth',{type:'date', value:c?.dateOfBirth})}
+    ${field('c-email','Email',{type:'email', value:c?.email, placeholder:'aarav@example.com'})}
+    ${field('c-phone','Phone',{value:c?.phone, placeholder:'9876543210', hint:'10 digits'})}
+    ${field('c-pan','PAN',{value:c?.pan==null? '' : c.pan, placeholder:'ABCDE1234F', hint:"Optional — required if a linked proposal's annual premium exceeds ₹50,000"})}
+  `;
+        document.getElementById('drawerFoot').innerHTML = `
+    <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+    <button class="btn btn-primary" id="saveBtn">${c ? 'Save changes' : 'Create customer'}</button>
+  `;
+        document.getElementById('cancelBtn').addEventListener('click', closeDrawer);
+        document.getElementById('saveBtn').addEventListener('click', async ()=>{
+            const payload = {
+                fullName: document.getElementById('c-fullName').value.trim(),
+                dateOfBirth: document.getElementById('c-dob').value,
+                email: document.getElementById('c-email').value.trim(),
+                phone: document.getElementById('c-phone').value.trim(),
+                pan: document.getElementById('c-pan').value.trim() || null
+            };
+            try{
+                if(c) await api('PUT', `/customers/${c.id}`, payload);
+                else await api('POST', '/customers', payload);
+                toast(c ? 'Customer updated' : 'Customer created', 'success');
+                closeDrawer(); render();
+            }catch(e){ showFieldErrors(e.payload && e.payload.fieldErrors); }
+        });
+        openDrawer(c ? `Edit ${c.id}` : 'New Customer');
+    }
+
+    async function deleteCustomer(id){
+        if(!confirm(`Delete customer ${id}? This can't be undone.`)) return;
+        try{ await api('DELETE', `/customers/${id}`); toast('Customer deleted', 'success'); render(); }
+        catch(e){}
+    }
+
+    async function renderProposals(){
+        document.getElementById('topbarActions').innerHTML =
+            `<button class="btn btn-primary" id="newProposalBtn">+ New Proposal</button>`;
+        document.getElementById('newProposalBtn').addEventListener('click', ()=>openProposalForm());
+
+        let data;
+        try{ data = await api('GET', `/proposals?page=${state.page.proposals}&size=${state.size}`); }
+        catch(e){ document.getElementById('content').innerHTML = errorPanel(); return; }
+
+        const content = document.getElementById('content');
+        if(data.content.length===0 && state.page.proposals===0){
+            content.innerHTML = emptyState('◇','No proposals yet','Create a proposal for an existing customer to get started.','newProposalBtn2','+ New Proposal');
+            document.getElementById('newProposalBtn2').addEventListener('click', ()=>openProposalForm());
+            return;
+        }
+
+        content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>ID</th><th>Customer</th><th>Term</th><th>Sum Assured</th><th>Status</th><th>Policy No.</th><th></th></tr></thead>
+        <tbody>
+          ${data.content.map(p=>`
+            <tr data-id="${esc(p.id)}">
+              <td class="id-cell">${esc(p.id)}</td>
+              <td class="mono">${esc(p.customerId)}</td>
+              <td class="mono">${p.policyTermYears}y</td>
+              <td class="mono">${fmtMoney(p.sumAssured)}</td>
+              <td>${p.status==='SUBMITTED' ? '<span class="badge badge-submitted">Submitted</span>' : '<span class="badge badge-draft">Draft</span>'}</td>
+              <td class="mono">${p.policyNumber ? `<span class="seal">✓</span>${esc(p.policyNumber)}` : '—'}</td>
+              <td>
+                <div class="row-actions">
+                  ${p.status==='DRAFT' ? `<button class="btn btn-sm btn-primary" data-submit="${esc(p.id)}">Submit</button>` : ''}
+                  ${p.status==='DRAFT' ? `<button class="btn btn-sm btn-danger" data-del="${esc(p.id)}">Delete</button>` : ''}
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      ${pager(data, 'proposals')}
+    </div>`;
+
+        content.querySelectorAll('[data-submit]').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation(); submitProposal(b.dataset.submit);}));
+        content.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation(); deleteProposal(b.dataset.del);}));
+        content.querySelectorAll('tbody tr').forEach(tr=>tr.addEventListener('click', ()=>openProposalDetail(tr.dataset.id)));
+        wirePager('proposals');
+    }
+
+    async function openProposalDetail(id){
+        let p; try{ p = await api('GET', `/proposals/${id}`); } catch(e){ return; }
+        const body = document.getElementById('drawerBody');
+        body.innerHTML = `
+    <div class="kv"><span class="k">Customer</span><span class="v">${esc(p.customerId)}</span></div>
+    <div class="kv"><span class="k">Status</span><span class="v">${p.status==='SUBMITTED' ? '<span class="badge badge-submitted">Submitted</span>' : '<span class="badge badge-draft">Draft</span>'}</span></div>
+    <div class="kv"><span class="k">Policy number</span><span class="v">${p.policyNumber ? esc(p.policyNumber) : '—'}</span></div>
+    <div class="kv"><span class="k">Policy term</span><span class="v">${p.policyTermYears} years</span></div>
+    <div class="kv"><span class="k">Sum assured</span><span class="v">${fmtMoney(p.sumAssured)}</span></div>
+    <div class="kv"><span class="k">Annual premium</span><span class="v">${fmtMoney(p.annualPremium)}</span></div>
+    <div class="kv"><span class="k">Payment frequency</span><span class="v">${esc(p.paymentFrequency)}</span></div>
+    <div class="kv"><span class="k">Nominee</span><span class="v">${esc(p.nomineeName)}${p.nomineeRelationship? ' ('+esc(p.nomineeRelationship)+')' : ''}</span></div>
+    <div class="kv"><span class="k">Created</span><span class="v">${fmtDateTime(p.createdAt)}</span></div>
+    <div class="kv"><span class="k">Submitted</span><span class="v">${fmtDateTime(p.submittedAt)}</span></div>
+  `;
+        document.getElementById('drawerFoot').innerHTML = `
+    <button class="btn btn-ghost" id="closeBtn">Close</button>
+    ${p.status==='DRAFT' ? `<button class="btn btn-primary" id="submitInline">Submit proposal</button>` : ''}
+  `;
+        document.getElementById('closeBtn').addEventListener('click', closeDrawer);
+        if(p.status==='DRAFT'){
+            document.getElementById('submitInline').addEventListener('click', async ()=>{
+                await submitProposal(p.id); closeDrawer();
+            });
+        }
+        openDrawer(p.id);
+    }
+
+    async function openProposalForm(){
+        if(state.customersCache.length===0){
+            try{ const d = await api('GET', '/customers?page=0&size=100'); state.customersCache = d.content; }catch(e){}
+        }
+        if(state.customersCache.length===0){
+            toast('Create a customer first', 'error'); return;
+        }
+
+        let refTerms=[], refFreq=[];
+        try{
+            refTerms = await api('GET', '/reference-master/POLICY_TERM');
+            refFreq = await api('GET', '/reference-master/PAYMENT_FREQUENCY');
+        }catch(e){}
+
+        const body = document.getElementById('drawerBody');
+        body.innerHTML = `
+    ${selectField('p-customer','Customer', state.customersCache.map(c=>({value:c.id, label:`${c.id} — ${c.fullName}`})))}
+    ${selectField('p-term','Policy term', refTerms.map(t=>({value:t, label:t+' years'})))}
+    ${field('p-sum','Sum assured (₹)',{type:'number', placeholder:'500000', hint:'Between ₹1,00,000 and ₹5,00,00,000'})}
+    ${field('p-premium','Annual premium (₹)',{type:'number', placeholder:'12000', hint:'Minimum ₹5,000 · PAN required above ₹50,000'})}
+    ${selectField('p-freq','Payment frequency', refFreq.map(f=>({value:f, label:f})))}
+    ${field('p-nominee','Nominee name',{placeholder:'Priya Sharma', hint:"Cannot match the customer's name"})}
+    ${field('p-relation','Nominee relationship',{placeholder:'Spouse (optional)'})}
+  `;
+        document.getElementById('drawerFoot').innerHTML = `
+    <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+    <button class="btn btn-primary" id="saveBtn">Create proposal</button>
+  `;
+        document.getElementById('cancelBtn').addEventListener('click', closeDrawer);
+        document.getElementById('saveBtn').addEventListener('click', async ()=>{
+            const payload = {
+                customerId: document.getElementById('p-customer').value,
+                policyTermYears: Number(document.getElementById('p-term').value),
+                sumAssured: Number(document.getElementById('p-sum').value),
+                annualPremium: Number(document.getElementById('p-premium').value),
+                paymentFrequency: document.getElementById('p-freq').value,
+                nomineeName: document.getElementById('p-nominee').value.trim(),
+                nomineeRelationship: document.getElementById('p-relation').value.trim() || null
+            };
+            try{
+                await api('POST', '/proposals', payload);
+                toast('Proposal created as draft', 'success');
+                closeDrawer(); render();
+            }catch(e){ showFieldErrors(e.payload && e.payload.fieldErrors); }
+        });
+        openDrawer('New Proposal');
+    }
+
+    async function submitProposal(id){
+        try{
+            await api('POST', `/proposals/${id}/submit`);
+            toast('Proposal submitted — policy number issued', 'success');
+            render();
+        }catch(e){}
+    }
+    async function deleteProposal(id){
+        if(!confirm(`Delete proposal ${id}?`)) return;
+        try{ await api('DELETE', `/proposals/${id}`); toast('Proposal deleted', 'success'); render(); }
+        catch(e){}
+    }
+
+    async function renderAudits(){
+        let data;
+        try{ data = await api('GET', `/audits?page=${state.page.audits}&size=${state.size}`); }
+        catch(e){ document.getElementById('content').innerHTML = errorPanel(); return; }
+
+        const content = document.getElementById('content');
+        if(data.content.length===0 && state.page.audits===0){
+            content.innerHTML = emptyState('◇','No audit records yet','Submit a proposal to generate the first audit entry.');
+            return;
+        }
+
+        content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>ID</th><th>Proposal</th><th>Policy No.</th><th>Action</th><th>Timestamp</th></tr></thead>
+        <tbody>
+          ${data.content.map(a=>`
+            <tr>
+              <td class="id-cell">${esc(a.id)}</td>
+              <td class="mono">${esc(a.proposalId)}</td>
+              <td class="mono"><span class="seal">✓</span>${esc(a.policyNumber)}</td>
+              <td class="mono">${esc(a.action)}</td>
+              <td class="mono">${fmtDateTime(a.timestamp)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      ${pager(data, 'audits')}
+    </div>`;
+        wirePager('audits');
+    }
+
+    async function renderReference(){
+        let terms=[], freq=[];
+        try{
+            terms = await api('GET', '/reference-master/POLICY_TERM');
+            freq = await api('GET', '/reference-master/PAYMENT_FREQUENCY');
+        }catch(e){ document.getElementById('content').innerHTML = errorPanel(); return; }
+
+        document.getElementById('content').innerHTML = `
+    <div class="ref-grid">
+      <div class="ref-card">
+        <h3>Policy Term</h3>
+        <div class="cat">POLICY_TERM</div>
+        <div class="chip-list">${terms.map(t=>`<span class="chip">${esc(t)} years</span>`).join('')}</div>
+      </div>
+      <div class="ref-card">
+        <h3>Payment Frequency</h3>
+        <div class="cat">PAYMENT_FREQUENCY</div>
+        <div class="chip-list">${freq.map(f=>`<span class="chip">${esc(f)}</span>`).join('')}</div>
+      </div>
+    </div>`;
+    }
+
+    function emptyState(glyph, title, sub, btnId, btnLabel){
+        return `<div class="panel"><div class="empty-state">
+    <div class="glyph">${glyph}</div>
+    <h3>${esc(title)}</h3>
+    <p>${esc(sub)}</p>
+    ${btnId ? `<button class="btn btn-primary" id="${btnId}">${esc(btnLabel)}</button>` : ''}
+  </div></div>`;
+    }
+    function errorPanel(){
+        return `<div class="panel"><div class="empty-state">
+    <div class="glyph">!</div>
+    <h3>Couldn't load this view</h3>
+    <p>Check that the backend is running on localhost:8080.</p>
+  </div></div>`;
+    }
+    function pager(data){
+        const from = data.page*data.size + 1;
+        const to = Math.min(from + data.content.length - 1, data.totalElements);
+        return `<div class="pager">
+    <span class="info">${data.totalElements===0?'0':`${from}–${to}`} of ${data.totalElements}</span>
+    <div class="controls">
+      <button class="btn btn-sm" data-page="prev" ${data.page<=0?'disabled':''}>Prev</button>
+      <button class="btn btn-sm" data-page="next" ${data.page>=data.totalPages-1?'disabled':''}>Next</button>
+    </div>
+  </div>`;
+    }
+    function wirePager(key){
+        document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click', ()=>{
+            if(b.dataset.page==='prev') state.page[key] = Math.max(0, state.page[key]-1);
+            else state.page[key] = state.page[key]+1;
+            render();
+        }));
+    }
+
+    navigate('customers');
+</script>
+</body>
+</html>
